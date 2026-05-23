@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-calm-bg: var(--calm-bg);
+  --color-calm-text: var(--calm-text);
+  --color-calm-primary: var(--calm-primary);
+  --color-calm-secondary: var(--calm-secondary);
+  --color-calm-accent: var(--calm-accent);
+  --color-calm-card: var(--calm-card);
+  --color-calm-border: var(--calm-border);
+}
+
+:root {
+  /* Soft, calming light mode palette */
+  --calm-bg: #F8FAF9;
+  --calm-text: #2C3E38;
+  --calm-primary: #52796F;
+  --calm-secondary: #CAD2C5;
+  --calm-accent: #84A98C;
+  --calm-card: #FFFFFF;
+  --calm-border: #E2E8E4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Soft, high-contrast dark mode for less eye strain */
+    --calm-bg: #1A211F;
+    --calm-text: #E5EBE8;
+    --calm-primary: #84A98C;
+    --calm-secondary: #354F52;
+    --calm-accent: #52796F;
+    --calm-card: #222B29;
+    --calm-border: #2C3E38;
+  }
+}
+
+body {
+  background-color: var(--calm-bg);
+  color: var(--calm-text);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@layer utilities {
+  .btn-large {
+    @apply w-full py-5 rounded-2xl text-xl font-medium shadow-sm active:scale-[0.98] transition-transform flex items-center justify-center;
+  }
+  
+  .btn-primary {
+    @apply bg-calm-primary text-white;
+  }
+  
+  .btn-secondary {
+    @apply bg-calm-secondary text-calm-text;
+  }
+}
