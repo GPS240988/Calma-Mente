@@ -94,12 +94,13 @@ function SessionPage() {
         </div>
       </div>
 
-      <div className="w-full mt-auto pt-8">
+      <div className="w-full mt-8 pt-6 border-t border-calm-border">
+        <p className="text-sm text-calm-text/50 text-center mb-4">Avaliação Pós-Crise</p>
         <button 
           onClick={handleFinishEarly}
-          className="w-full py-5 text-lg font-medium text-calm-text/70 bg-transparent border-2 border-calm-border rounded-2xl active:bg-calm-border/50 transition-colors"
+          className="w-full py-5 text-lg font-medium text-calm-primary bg-calm-primary/10 border-2 border-calm-primary/30 rounded-2xl active:scale-[0.98] transition-all hover:bg-calm-primary/20"
         >
-          Já me sinto melhor
+          Ir para avaliação
         </button>
       </div>
     </main>
