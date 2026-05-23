@@ -8,7 +8,6 @@ import { ArrowLeft } from 'lucide-react'
 
 export default function AuthPage() {
   const router = useRouter()
-  const supabase = createClient()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,6 +18,7 @@ export default function AuthPage() {
     setLoading(true)
     setMessage('')
 
+    const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setMessage(error.message)
@@ -34,6 +34,7 @@ export default function AuthPage() {
     setLoading(true)
     setMessage('')
 
+    const supabase = createClient()
     const { error } = await supabase.auth.signUp({
       email,
       password,
