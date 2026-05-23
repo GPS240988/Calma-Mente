@@ -107,72 +107,113 @@ function SessionPage() {
         {!avaliacaoAberta && (
           <button
             onClick={() => setAvaliacaoAberta(true)}
-            className="w-full py-5 text-lg font-medium text-calm-primary bg-calm-primary/10 border-2 border-calm-primary/30 rounded-2xl active:scale-[0.98] transition-all hover:bg-calm-primary/20"
+            className="w-full py-5 rounded-2xl text-lg font-semibold bg-calm-card/40 backdrop-blur-md border border-calm-primary/30 text-calm-primary hover:bg-calm-primary/10 active:scale-[0.98] transition-all shadow-md duration-300 flex items-center justify-center gap-2 cursor-pointer"
           >
-            Avaliação Pós-Crise
+            📋 Responder Avaliação Pós-Crise
           </button>
         )}
 
         {avaliacaoAberta && !sugestao && (
-          <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <p className="text-sm text-calm-text/50 text-center mb-1">Como você se sente agora?</p>
-            {estados.map((e) => (
-              <button
-                key={e.key}
-                onClick={() => handleAvaliar(e.key)}
-                className="w-full p-4 rounded-2xl bg-calm-card border border-calm-border text-left hover:border-calm-primary/40 active:scale-[0.98] transition-all"
-              >
-                <span className="text-lg font-medium text-calm-text">{e.label}</span>
-                <p className="text-sm text-calm-text/60 mt-0.5">{e.desc}</p>
-              </button>
-            ))}
+          <div className="w-full max-w-md mx-auto p-6 rounded-3xl bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col gap-4">
+            <div className="text-center mb-2">
+              <h3 className="text-lg font-bold text-calm-text">Avaliação Pós-Crise</h3>
+              <p className="text-sm text-calm-text/70 mt-1">Como você se sente após este exercício?</p>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              {estados.map((e) => {
+                let textCor = 'text-calm-text'
+                let borderCor = 'hover:border-calm-primary/40'
+                if (e.key === 'muito_melhor') {
+                  textCor = 'text-calm-primary font-semibold'
+                  borderCor = 'hover:border-calm-primary/60 hover:bg-calm-primary/5'
+                } else if (e.key === 'um_pouco_melhor') {
+                  textCor = 'text-calm-accent font-semibold'
+                  borderCor = 'hover:border-calm-accent/60 hover:bg-calm-accent/5'
+                } else {
+                  textCor = 'text-calm-text/70'
+                  borderCor = 'hover:border-calm-text/40 hover:bg-calm-text/5'
+                }
+
+                return (
+                  <button
+                    key={e.key}
+                    onClick={() => handleAvaliar(e.key)}
+                    className={`w-full p-4 rounded-2xl bg-calm-card/60 border border-calm-border/80 text-left transition-all duration-300 active:scale-[0.98] shadow-sm cursor-pointer ${borderCor}`}
+                  >
+                    <span className={`text-base ${textCor}`}>{e.label}</span>
+                    <p className="text-xs text-calm-text/60 mt-0.5">{e.desc}</p>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
 
         {sugestao && (
-          <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-6 duration-700">
-            <div className="text-center">
-              <p className="text-sm text-calm-text/50 mb-1">Avaliação Pós-Crise</p>
-              <h2 className="text-xl font-semibold text-calm-text">{sugestao.titulo}</h2>
-              <p className="text-sm text-calm-text/70 mt-1">{sugestao.descricao}</p>
-            </div>
+          <div className="w-full max-w-md mx-auto flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="p-6 rounded-3xl bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl text-center">
+              <p className="text-xs font-semibold text-calm-primary/80 uppercase tracking-widest mb-1">Avaliação Concluída</p>
+              <h2 className="text-xl font-bold text-calm-text">{sugestao.titulo}</h2>
+              <p className="text-sm text-calm-text/70 mt-1.5 leading-relaxed">{sugestao.descricao}</p>
 
-            <div className="flex flex-wrap justify-center gap-2">
-              {estados.map((e) => (
-                <button
-                  key={e.key}
-                  onClick={() => handleAvaliar(e.key)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    e.key === estadoSelecionado
-                      ? 'bg-calm-primary/15 border-calm-primary text-calm-primary'
-                      : 'bg-transparent border-calm-border text-calm-text/50 hover:border-calm-text/30'
-                  }`}
-                >
-                  {e.label}
-                </button>
-              ))}
+              <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+                {estados.map((e) => (
+                  <button
+                    key={e.key}
+                    onClick={() => handleAvaliar(e.key)}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all duration-300 cursor-pointer ${
+                      e.key === estadoSelecionado
+                        ? 'bg-calm-primary/15 border-calm-primary text-calm-primary shadow-sm font-semibold'
+                        : 'bg-transparent border-calm-border text-calm-text/50 hover:border-calm-text/30'
+                    }`}
+                  >
+                    {e.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {sugestao.categorias.map((cat) => (
               <div
                 key={cat.titulo}
-                className="w-full bg-calm-card border border-calm-border p-5 rounded-2xl text-left flex flex-col gap-3"
+                className="w-full bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl p-5 rounded-3xl text-left flex flex-col gap-3.5 transition-all duration-500"
               >
-                <h3 className="text-xs font-semibold text-calm-primary/80 uppercase tracking-wide">
+                <h3 className="text-xs font-bold text-calm-primary/80 uppercase tracking-wider border-b border-calm-border/50 pb-2">
                   {cat.titulo}
                 </h3>
-                {cat.acoes.map((acao) => (
-                  <div key={acao} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-calm-primary mt-2 flex-shrink-0" />
-                    <p className="text-base text-calm-text font-medium">{acao}</p>
-                  </div>
-                ))}
+                <div className="flex flex-col gap-2.5">
+                  {cat.acoes.map((acao) => (
+                    <div key={acao} className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-calm-primary mt-2 flex-shrink-0" />
+                      <p className="text-sm text-calm-text/90 font-medium leading-relaxed">{acao}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
 
+            {(estadoSelecionado === 'muito_melhor' || estadoSelecionado === 'um_pouco_melhor') && (
+              <div className="w-full bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl p-6 rounded-3xl text-center flex flex-col items-center gap-3 animate-in fade-in zoom-in-95 duration-300">
+                <span className="text-3xl animate-bounce">🌱</span>
+                <div>
+                  <h4 className="text-sm font-bold text-calm-text">Sua mente está mais tranquila</h4>
+                  <p className="text-xs text-calm-text/70 mt-1 leading-relaxed">
+                    Que tal canalizar essa clareza para a produtividade de forma suave? Comece um Pomodoro gamificado!
+                  </p>
+                </div>
+                <Link
+                  href="/pomodoro"
+                  className="w-full py-3.5 bg-calm-primary hover:bg-calm-primary/95 text-white font-bold text-xs rounded-xl shadow-md transition-all text-center flex items-center justify-center gap-1.5 active:scale-95 animate-pulse duration-[2500ms] cursor-pointer"
+                >
+                  ⏱️ Iniciar Foco com seu Pet
+                </Link>
+              </div>
+            )}
+
             <button
               onClick={() => router.push('/')}
-              className="w-full mt-2 py-4 text-base font-medium btn-primary shadow-md flex items-center justify-center gap-2"
+              className="w-full py-4 text-base font-semibold bg-calm-bg hover:bg-calm-border/10 border border-calm-border rounded-2xl active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer text-calm-text/80"
             >
               Voltar ao início
               <ArrowRight className="w-5 h-5" />

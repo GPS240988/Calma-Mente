@@ -48,6 +48,26 @@ export default function AuthPage() {
     setLoading(false)
   }
 
+  const resetPassword = async () => {
+    if (!email.trim()) {
+      setMessage('Digite seu e-mail primeiro.')
+      return
+    }
+    setLoading(true)
+    setMessage('')
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/update-password`,
+    })
+    if (error) {
+      setMessage(error.message)
+    } else {
+      setMessage('E-mail de recuperação enviado! Verifique sua caixa de entrada.')
+    }
+    setLoading(false)
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center p-6 sm:p-12">
       <div className="w-full flex justify-start mb-12">
@@ -91,8 +111,17 @@ export default function AuthPage() {
             />
           </div>
 
+          <button
+            type="button"
+            onClick={resetPassword}
+            disabled={loading}
+            className="text-sm text-calm-primary/70 hover:text-calm-primary text-right -mt-2 mb-2 self-end transition-colors"
+          >
+            Esqueci minha senha
+          </button>
+
           {message && (
-            <p className={`text-sm text-center ${message.includes('erifique') || message.includes('sucesso') ? 'text-green-600' : 'text-red-500'}`}>
+            <p className={`text-sm text-center ${message.includes('erifique') || message.includes('sucesso') || message.includes('recuperação') ? 'text-green-600' : 'text-red-500'}`}>
               {message}
             </p>
           )}

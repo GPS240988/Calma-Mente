@@ -11,14 +11,21 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col p-6 sm:p-12">
-      {displayName && (
-        <header className="w-full flex items-center justify-between mb-16">
-          <div />
+      <header className="w-full flex items-center justify-between mb-16">
+        <div />
+        {displayName ? (
           <UserMenu displayName={displayName} />
-        </header>
-      )}
+        ) : (
+          <Link 
+            href="/auth" 
+            className="px-5 py-2.5 rounded-2xl text-sm font-semibold text-calm-primary bg-calm-primary/10 hover:bg-calm-primary/15 border border-calm-primary/20 transition-all shadow-sm active:scale-95"
+          >
+            Entrar / Criar conta
+          </Link>
+        )}
+      </header>
 
-      <div className={`flex-1 flex flex-col items-center justify-center ${displayName ? "" : "min-h-screen -mt-20"}`}>
+      <div className="flex-1 flex flex-col items-center justify-center">
         <div className="w-full max-w-md flex flex-col items-center gap-12 text-center">
           
           <div className="flex flex-col items-center gap-4 animate-pulse duration-[3000ms]">
@@ -34,13 +41,10 @@ export default async function Home() {
               Preciso me acalmar
             </Link>
 
-            {!displayName && (
-              <Link href="/auth" className="btn-large btn-secondary text-lg">
-                Entrar / Criar conta
-              </Link>
-            )}
+            <Link href="/pomodoro" className="btn-large bg-calm-accent text-white hover:bg-calm-accent/90 text-xl shadow-md">
+              ⏱️ Focar / Pomodoro
+            </Link>
           </div>
-
         </div>
       </div>
     </main>
