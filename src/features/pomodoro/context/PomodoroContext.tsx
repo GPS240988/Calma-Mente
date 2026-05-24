@@ -287,6 +287,26 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (authUser) {
           setUser(authUser)
           console.log('[Init] Usuário logado detectado no mount:', authUser.email)
+
+          // SEGURANÇA CONTRA VIOLAÇÃO DE FK: Certifica que o usuário existe na tabela public.users
+          try {
+            const { data: userRecord } = await supabase
+              .from('users')
+              .select('id')
+              .eq('id', authUser.id)
+              .maybeSingle()
+
+            if (!userRecord) {
+              console.log('[Init] Registro em public.users não encontrado. Inicializando registro...')
+              await supabase.from('users').insert({
+                id: authUser.id,
+                email: authUser.email,
+                name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário'
+              })
+            }
+          } catch (fkErr) {
+            console.error('[Init] Falha ao verificar/criar registro na tabela public.users:', fkErr)
+          }
           
           // Fetch from dedicated pomodoro_profiles table
           let { data: pomProfile, error: pomError } = await supabase
@@ -415,6 +435,26 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       if (authUser) {
         try {
+          // SEGURANÇA CONTRA VIOLAÇÃO DE FK: Certifica que o usuário existe na tabela public.users
+          try {
+            const { data: userRecord } = await supabase
+              .from('users')
+              .select('id')
+              .eq('id', authUser.id)
+              .maybeSingle()
+
+            if (!userRecord) {
+              console.log('[Auth] Registro em public.users não encontrado. Inicializando registro pós-login...')
+              await supabase.from('users').insert({
+                id: authUser.id,
+                email: authUser.email,
+                name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário'
+              })
+            }
+          } catch (fkErr) {
+            console.error('[Auth] Falha ao verificar/criar registro na tabela public.users:', fkErr)
+          }
+
           let { data: pomProfile, error: pomError } = await supabase
             .from('pomodoro_profiles')
             .select('*')
