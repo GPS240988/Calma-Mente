@@ -1,10 +1,11 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { X, Wind, Brain, Footprints, Heart, ArrowRight } from 'lucide-react'
 import { AudioPlayer } from '@/components/audio/AudioPlayer'
+import { createClient } from '@/lib/supabase/client'
 import {
   getSugestoes,
   type TipoIntervencao,
@@ -67,6 +68,17 @@ function SessionPage() {
   const [avaliacaoAberta, setAvaliacaoAberta] = useState(false)
   const [estadoSelecionado, setEstadoSelecionado] = useState<EstadoPosMeditacao | null>(null)
   const [sugestao, setSugestao] = useState<Sugestao | null>(null)
+  const [user, setUser] = useState<any>(null)
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUser(user)
+        console.log('[Session] Usuário autenticado:', user.email)
+      }
+    })
+  }, [])
 
   const audioFiles: Record<string, string> = {
     respiracao: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/RespiracaoCalmante.mp3',
@@ -75,9 +87,46 @@ function SessionPage() {
     relaxamento: '/audio/relaxamento-progressivo.mp3',
   }
 
-  function handleAvaliar(key: EstadoPosMeditacao) {
+  async function handleAvaliar(key: EstadoPosMeditacao) {
     setEstadoSelecionado(key)
     setSugestao(getSugestoes(tipo, key))
+
+    if (user) {
+      const duracoes: Record<string, number> = {
+        respiracao: 300,
+        desaceleracao: 360,
+        grounding: 420,
+        relaxamento: 480
+      }
+      const duracao = duracoes[tipo] || 300
+
+      try {
+        console.log('[Session] Gravando sessão de meditação no Supabase para:', user.id)
+        
+        const anxietyMap: Record<EstadoPosMeditacao, number> = {
+          muito_melhor: 2,
+          um_pouco_melhor: 5,
+          na_mesma: 8
+        }
+
+        const { error } = await supabase.from('sessions').insert({
+          user_id: user.id,
+          type: tipo,
+          duration_seconds: duracao,
+          completed: true,
+          anxiety_after: anxietyMap[key],
+          created_at: new Date().toISOString()
+        })
+
+        if (error) {
+          console.error('[Session] Erro ao gravar no Supabase:', error)
+        } else {
+          console.log('[Session] Sessão gravada com sucesso!')
+        }
+      } catch (err) {
+        console.error('[Session] Falha ao conectar ao Supabase:', err)
+      }
+    }
   }
 
   return (

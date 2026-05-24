@@ -288,31 +288,37 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setUser(authUser)
           console.log('[Init] Usuário logado detectado no mount:', authUser.email)
           
-          // Fetch user profile preferences
-          const { data: profile, error: profileError } = await supabase
-            .from('users')
-            .select('preferencias')
-            .eq('id', authUser.id)
-            .single()
+          // Fetch from dedicated pomodoro_profiles table
+          const { data: pomProfile, error: pomError } = await supabase
+            .from('pomodoro_profiles')
+            .select('*')
+            .eq('user_id', authUser.id)
+            .maybeSingle()
 
-          if (profileError) {
-            console.error('[Init] Erro ao buscar perfil no Supabase:', profileError)
+          if (pomError) {
+            console.error('[Init] Erro ao buscar perfil pomodoro:', pomError)
           }
 
-          if (profile?.preferencias?.pomodoro) {
-            const serverData = profile.preferencias.pomodoro
-            console.log('[Init] Dados do Pomodoro mesclados do servidor.')
-            // Merge logic (prioritize server level & coins but keep newer session history)
+          if (pomProfile) {
+            console.log('[Init] Dados do Pomodoro carregados da tabela pomodoro_profiles.')
             mergedData = {
               ...mergedData,
-              ...serverData,
-              // Merge histories properly, avoid duplicates
-              sessionHistory: [
-                ...serverData.sessionHistory,
-                ...mergedData.sessionHistory.filter(
-                  lh => !serverData.sessionHistory.some((sh: any) => sh.id === lh.id)
-                )
-              ]
+              coins: pomProfile.coins,
+              xp: pomProfile.xp,
+              level: pomProfile.level,
+              streakDays: pomProfile.streak_days,
+              lastActiveDate: pomProfile.last_active_date,
+              totalFocusTime: pomProfile.total_focus_seconds,
+              inventory: pomProfile.inventory || { racao_basica: 2 },
+              pet: {
+                name: pomProfile.pet_name,
+                type: pomProfile.pet_type,
+                level: pomProfile.pet_level,
+                xp: pomProfile.pet_xp,
+                xpNeeded: pomProfile.pet_xp_needed,
+                hunger: pomProfile.pet_hunger,
+                happiness: pomProfile.pet_happiness,
+              }
             }
           }
         } else {
@@ -367,7 +373,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     loadData()
   }, [])
 
-  // 1.4 Dynamic Auth State Change Listener to keep user profile and preferences synced in real-time
+  // 1.4 Dynamic Auth State Change Listener
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const authUser = session?.user ?? null
@@ -376,35 +382,31 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       if (authUser) {
         try {
-          const { data: profile, error: profileError } = await supabase
-            .from('users')
-            .select('preferencias')
-            .eq('id', authUser.id)
-            .single()
+          const { data: pomProfile, error: pomError } = await supabase
+            .from('pomodoro_profiles')
+            .select('*')
+            .eq('user_id', authUser.id)
+            .maybeSingle()
 
-          if (profileError) {
-            console.error('[Auth] Erro ao buscar preferências do perfil:', profileError)
-          }
+          if (pomError) console.error('[Auth] Erro ao buscar pomodoro_profiles:', pomError)
 
-          if (profile?.preferencias?.pomodoro) {
-            const serverData = profile.preferencias.pomodoro
-            console.log('[Auth] Preferências de Pomodoro sincronizadas do Supabase.')
-            
-            setCoins(prev => serverData.coins ?? prev)
-            setXp(prev => serverData.xp ?? prev)
-            setLevel(prev => serverData.level ?? prev)
-            setInventory(prev => serverData.inventory ?? prev)
-            setPet(prev => serverData.pet ?? prev)
-            setStreakDays(prev => serverData.streakDays ?? prev)
-            setLastActiveDate(prev => serverData.lastActiveDate ?? prev)
-            setTotalFocusTime(prev => serverData.totalFocusTime ?? prev)
-            
-            setSessionHistory(prev => {
-              const combined = [
-                ...serverData.sessionHistory,
-                ...prev.filter(lh => !serverData.sessionHistory.some((sh: any) => sh.id === lh.id))
-              ]
-              return combined.slice(0, 100)
+          if (pomProfile) {
+            console.log('[Auth] pomodoro_profiles sincronizado do Supabase.')
+            setCoins(pomProfile.coins)
+            setXp(pomProfile.xp)
+            setLevel(pomProfile.level)
+            setStreakDays(pomProfile.streak_days)
+            setLastActiveDate(pomProfile.last_active_date)
+            setTotalFocusTime(pomProfile.total_focus_seconds)
+            setInventory(pomProfile.inventory || { racao_basica: 2 })
+            setPet({
+              name: pomProfile.pet_name,
+              type: pomProfile.pet_type,
+              level: pomProfile.pet_level,
+              xp: pomProfile.pet_xp,
+              xpNeeded: pomProfile.pet_xp_needed,
+              hunger: pomProfile.pet_hunger,
+              happiness: pomProfile.pet_happiness,
             })
           }
         } catch (err) {
@@ -418,7 +420,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [supabase])
 
-  // 2. State Syncing to localStorage & Supabase
+  // 2. State Syncing to localStorage & Supabase pomodoro_profiles
   const saveState = useCallback(async (
     updatedCoins: number,
     updatedXp: number,
@@ -442,31 +444,36 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       sessionHistory: updatedHistory
     }
 
+    // Always save to localStorage as offline fallback
     localStorage.setItem('calmamente_pomodoro_data', JSON.stringify(dataToSave))
 
-    // Sync dynamically with Supabase if logged in
+    // Sync to dedicated pomodoro_profiles table when logged in
     if (user) {
       try {
-        const { data: currentProfile } = await supabase
-          .from('users')
-          .select('preferencias')
-          .eq('id', user.id)
-          .single()
+        const { error: upsertError } = await supabase
+          .from('pomodoro_profiles')
+          .upsert({
+            user_id: user.id,
+            coins: updatedCoins,
+            xp: updatedXp,
+            level: updatedLevel,
+            pet_name: updatedPet.name,
+            pet_type: updatedPet.type,
+            pet_level: updatedPet.level,
+            pet_xp: updatedPet.xp,
+            pet_xp_needed: updatedPet.xpNeeded,
+            pet_hunger: updatedPet.hunger,
+            pet_happiness: updatedPet.happiness,
+            streak_days: updatedStreak,
+            last_active_date: updatedLastDate,
+            total_focus_seconds: updatedTotalTime,
+            inventory: updatedInventory,
+          }, { onConflict: 'user_id' })
 
-        const updatedPrefs = {
-          ...(currentProfile?.preferencias || {}),
-          pomodoro: dataToSave
-        }
-
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ preferencias: updatedPrefs })
-          .eq('id', user.id)
-
-        if (updateError) {
-          console.error('[Sync] Erro ao salvar preferências no Supabase:', updateError)
+        if (upsertError) {
+          console.error('[Sync] Erro ao salvar pomodoro_profiles no Supabase:', upsertError)
         } else {
-          console.log('[Sync] Preferências salvas com sucesso no Supabase.')
+          console.log('[Sync] pomodoro_profiles atualizado com sucesso no Supabase.')
         }
       } catch (err) {
         console.error('Falha de sincronização Supabase (salvo localmente):', err)
@@ -616,7 +623,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
 
-    if (isActive) {
+    if (isActive && secondsLeft > 0) {
       // Save expected end time to let user resume if they navigate or reload
       localStorage.setItem('calmamente_active_timer_end', JSON.stringify({
         expectedEndTime: Date.now() + secondsLeft * 1000,
@@ -626,35 +633,27 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }))
 
       interval = setInterval(() => {
-        setSecondsLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(interval!)
-            localStorage.removeItem('calmamente_active_timer_end')
-            if (timerMode === 'foco') {
-              completeFocusSession()
-            } else if (timerMode === 'pausa') {
-              completeBreakSession()
-            }
-            return 0
-          }
-          // Dynamic expected time update to keep precise in localStorage
-          localStorage.setItem('calmamente_active_timer_end', JSON.stringify({
-            expectedEndTime: Date.now() + (prev - 1) * 1000,
-            mode: timerMode,
-            focusDuration: config.focusDuration,
-            breakDuration: config.shortBreakDuration
-          }))
-          return prev - 1
-        })
+        setSecondsLeft(prev => prev - 1)
       }, 1000)
-    } else {
+    } else if (secondsLeft <= 0) {
       localStorage.removeItem('calmamente_active_timer_end')
     }
 
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [isActive, timerMode, secondsLeft, config, completeFocusSession, completeBreakSession])
+  }, [isActive, secondsLeft, timerMode, config])
+
+  // 6. Handle Timer Completion
+  useEffect(() => {
+    if (isActive && secondsLeft <= 0) {
+      if (timerMode === 'foco') {
+        completeFocusSession()
+      } else if (timerMode === 'pausa') {
+        completeBreakSession()
+      }
+    }
+  }, [secondsLeft, isActive, timerMode, completeFocusSession, completeBreakSession])
 
   // 6. Action Functions
   const startTimer = useCallback(() => {
