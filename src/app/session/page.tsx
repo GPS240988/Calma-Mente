@@ -72,7 +72,8 @@ function SessionPage() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then((res: any) => {
+      const user = res.data?.user
       if (user) {
         setUser(user)
         console.log('[Session] Usuário autenticado:', user.email)

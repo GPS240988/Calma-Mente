@@ -289,7 +289,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           console.log('[Init] Usuário logado detectado no mount:', authUser.email)
           
           // Fetch from dedicated pomodoro_profiles table
-          const { data: pomProfile, error: pomError } = await supabase
+          let { data: pomProfile, error: pomError } = await supabase
             .from('pomodoro_profiles')
             .select('*')
             .eq('user_id', authUser.id)
@@ -297,6 +297,39 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
           if (pomError) {
             console.error('[Init] Erro ao buscar perfil pomodoro:', pomError)
+          }
+
+          // Se não existir o perfil no banco para o usuário logado, cria um inicial imediatamente
+          if (!pomProfile && !pomError) {
+            console.log('[Init] Perfil pomodoro não encontrado no Supabase. Criando perfil inicial...')
+            const { data: newProfile, error: createError } = await supabase
+              .from('pomodoro_profiles')
+              .insert({
+                user_id: authUser.id,
+                coins: mergedData.coins,
+                xp: mergedData.xp,
+                level: mergedData.level,
+                pet_name: mergedData.pet.name,
+                pet_type: mergedData.pet.type,
+                pet_level: mergedData.pet.level,
+                pet_xp: mergedData.pet.xp,
+                pet_xp_needed: mergedData.pet.xpNeeded,
+                pet_hunger: mergedData.pet.hunger,
+                pet_happiness: mergedData.pet.happiness,
+                streak_days: mergedData.streakDays,
+                last_active_date: mergedData.lastActiveDate,
+                total_focus_seconds: mergedData.totalFocusTime,
+                inventory: mergedData.inventory,
+              })
+              .select()
+              .maybeSingle()
+
+            if (createError) {
+              console.error('[Init] Erro ao criar perfil inicial no banco:', createError)
+            } else if (newProfile) {
+              console.log('[Init] Perfil inicial criado com sucesso no banco!')
+              pomProfile = newProfile
+            }
           }
 
           if (pomProfile) {
@@ -375,20 +408,61 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // 1.4 Dynamic Auth State Change Listener
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       const authUser = session?.user ?? null
       setUser(authUser)
       console.log('[Auth] Estado de autenticação alterado:', event, authUser?.email)
 
       if (authUser) {
         try {
-          const { data: pomProfile, error: pomError } = await supabase
+          let { data: pomProfile, error: pomError } = await supabase
             .from('pomodoro_profiles')
             .select('*')
             .eq('user_id', authUser.id)
             .maybeSingle()
 
           if (pomError) console.error('[Auth] Erro ao buscar pomodoro_profiles:', pomError)
+
+          // Se não existir o perfil no banco após login bem-sucedido, cria um com os valores locais atuais
+          if (!pomProfile && !pomError) {
+            console.log('[Auth] Perfil pomodoro não encontrado para o usuário logado, criando perfil inicial...')
+            const localData = localStorage.getItem('calmamente_pomodoro_data')
+            let currentLocal = { ...DEFAULT_USER_DATA }
+            if (localData) {
+              try {
+                currentLocal = { ...currentLocal, ...JSON.parse(localData) }
+              } catch (_) {}
+            }
+
+            const { data: newProfile, error: createError } = await supabase
+              .from('pomodoro_profiles')
+              .insert({
+                user_id: authUser.id,
+                coins: currentLocal.coins,
+                xp: currentLocal.xp,
+                level: currentLocal.level,
+                pet_name: currentLocal.pet.name,
+                pet_type: currentLocal.pet.type,
+                pet_level: currentLocal.pet.level,
+                pet_xp: currentLocal.pet.xp,
+                pet_xp_needed: currentLocal.pet.xpNeeded,
+                pet_hunger: currentLocal.pet.hunger,
+                pet_happiness: currentLocal.pet.happiness,
+                streak_days: currentLocal.streakDays,
+                last_active_date: currentLocal.lastActiveDate,
+                total_focus_seconds: currentLocal.totalFocusTime,
+                inventory: currentLocal.inventory,
+              })
+              .select()
+              .maybeSingle()
+
+            if (createError) {
+              console.error('[Auth] Erro ao criar perfil pomodoro no banco pós-login:', createError)
+            } else if (newProfile) {
+              console.log('[Auth] Perfil inicial criado com sucesso pós-login!')
+              pomProfile = newProfile
+            }
+          }
 
           if (pomProfile) {
             console.log('[Auth] pomodoro_profiles sincronizado do Supabase.')

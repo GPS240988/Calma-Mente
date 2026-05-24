@@ -12,7 +12,7 @@ export default function UpdatePasswordPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.onAuthStateChange((event) => {
+    supabase.auth.onAuthStateChange((event: any) => {
       if (event === 'SIGNED_IN') {
         // Session set from recovery link — ready to update
       }

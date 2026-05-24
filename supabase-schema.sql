@@ -163,6 +163,12 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'name', 'Usuário'),
     NEW.email
   );
+
+  -- Inicializa perfil do Pomodoro padrão para o novo usuário
+  INSERT INTO public.pomodoro_profiles (user_id)
+  VALUES (NEW.id)
+  ON CONFLICT (user_id) DO NOTHING;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
