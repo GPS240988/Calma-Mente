@@ -1,11 +1,15 @@
 'use client'
 
-import React, { useMemo } from 'react'
-import { Sparkles, Heart, AlertTriangle } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { Sparkles, Heart, AlertTriangle, X, UserCheck } from 'lucide-react'
 import { usePomodoro } from '../context/PomodoroContext'
+import type { PetType } from '../types'
 
 export const Companion: React.FC = () => {
-  const { pet, coins, level, timerMode, isActive } = usePomodoro()
+  const { pet, coins, level, timerMode, isActive, setPetDetails } = usePomodoro()
+  const [showChangePet, setShowChangePet] = useState(false)
+  const [newPetType, setNewPetType] = useState<PetType>(pet.type)
+  const [newPetName, setNewPetName] = useState(pet.name)
 
   // Get dynamic speech bubble text based on pet state
   const speechText = useMemo(() => {
@@ -201,106 +205,113 @@ export const Companion: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col md:flex-row items-center gap-6 p-6 rounded-3xl bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl relative overflow-hidden transition-all duration-500">
-      
-      {/* Background Soft Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-calm-primary/5 blur-3xl pointer-events-none" />
-
-      {/* Pet Avatar and Speech Section */}
-      <div className="flex flex-col items-center gap-4 relative z-10 w-full md:w-1/3">
-        {/* Animated Pet SVG */}
-        <div className="relative">
-          {renderPetSvg()}
-          {/* Level Badge badge */}
-          <div className="absolute bottom-0 right-2 bg-gradient-to-tr from-amber-500 to-yellow-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-md border-2 border-white">
-            {pet.level}
-          </div>
-        </div>
+    <>
+      <div className="w-full flex flex-col md:flex-row items-center gap-6 p-6 rounded-3xl bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl relative overflow-hidden transition-all duration-500">
         
-        <h2 className="text-xl font-bold text-calm-text tracking-tight capitalize">
-          {pet.name}
-        </h2>
-      </div>
+        {/* Background Soft Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-calm-primary/5 blur-3xl pointer-events-none" />
 
-      {/* Stats and speech text */}
-      <div className="flex-1 flex flex-col gap-4 z-10 w-full">
-        {/* Speech Bubble */}
-        <div className="relative p-4 rounded-2xl bg-calm-secondary/20 border border-calm-border/80 text-sm text-calm-text leading-relaxed font-medium">
-          {/* Speech bubble arrow pointer */}
-          <div className="absolute left-1/2 md:left-0 top-0 md:top-1/2 -translate-x-1/2 md:translate-x-0 md:-translate-y-1/2 -translate-y-full md:-ml-2 w-0 h-0 border-l-8 border-r-8 md:border-r-8 md:border-l-0 border-b-8 md:border-b-8 md:border-t-8 border-transparent border-b-calm-border/80 md:border-r-calm-border/80 md:border-b-transparent" />
+        {/* Pet Avatar and Speech Section */}
+        <div className="flex flex-col items-center gap-4 relative z-10 w-full md:w-1/3">
+          {/* Animated Pet SVG — click to change pet */}
+          <button
+            onClick={() => { setNewPetType(pet.type); setNewPetName(pet.name); setShowChangePet(true) }}
+            className="relative text-left cursor-pointer group"
+            title="Clique para trocar de mascote"
+          >
+            {renderPetSvg()}
+            <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/10 transition-colors" />
+            {/* Level Badge badge */}
+            <div className="absolute bottom-0 right-2 bg-gradient-to-tr from-amber-500 to-yellow-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-md border-2 border-white">
+              {pet.level}
+            </div>
+          </button>
           
-          <p className="relative z-10">{speechText}</p>
+          <h2 className="text-xl font-bold text-calm-text tracking-tight capitalize">
+            {pet.name}
+          </h2>
         </div>
 
-        {/* Pet RPG Status bars */}
-        <div className="flex flex-col gap-3.5 mt-2">
-          {/* XP Progress Bar */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs font-semibold text-calm-text/70">
-              <span className="flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-yellow-500 animate-pulse" /> Experiência do Pet
-              </span>
-              <span>{pet.xp} / {pet.xpNeeded} XP</span>
-            </div>
-            <div className="w-full h-3 rounded-full bg-calm-border/50 overflow-hidden border border-calm-border/40 p-0.5">
-              <div 
-                className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all duration-500 ease-out" 
-                style={{ width: `${(pet.xp / pet.xpNeeded) * 100}%` }}
-              />
-            </div>
+        {/* Stats and speech text */}
+        <div className="flex-1 flex flex-col gap-4 z-10 w-full">
+          {/* Speech Bubble */}
+          <div className="relative p-4 rounded-2xl bg-calm-secondary/20 border border-calm-border/80 text-sm text-calm-text leading-relaxed font-medium">
+            {/* Speech bubble arrow pointer */}
+            <div className="absolute left-1/2 md:left-0 top-0 md:top-1/2 -translate-x-1/2 md:translate-x-0 md:-translate-y-1/2 -translate-y-full md:-ml-2 w-0 h-0 border-l-8 border-r-8 md:border-r-8 md:border-l-0 border-b-8 md:border-b-8 md:border-t-8 border-transparent border-b-calm-border/80 md:border-r-calm-border/80 md:border-b-transparent" />
+            
+            <p className="relative z-10">{speechText}</p>
           </div>
 
-          {/* Stats Metrics (Fome / Felicidade) */}
-          <div className="grid grid-cols-2 gap-4">
-            
-            {/* Hunger status */}
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between text-xs font-semibold text-calm-text/70">
-                <span className="flex items-center gap-1 truncate">
-                  {pet.hunger < 35 && <AlertTriangle className="w-3.5 h-3.5 text-red-500 animate-bounce" />}
-                  Nutrição (Fome)
-                </span>
-                <span>{pet.hunger}%</span>
-              </div>
-              <div className="w-full h-2.5 rounded-full bg-calm-border/50 overflow-hidden">
-                <div 
-                  className={`h-full rounded-full transition-all duration-500 ease-out ${
-                    pet.hunger < 35 ? 'bg-red-400' : 'bg-calm-primary'
-                  }`}
-                  style={{ width: `${pet.hunger}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Happiness status */}
+          {/* Pet RPG Status bars */}
+          <div className="flex flex-col gap-3.5 mt-2">
+            {/* XP Progress Bar */}
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between text-xs font-semibold text-calm-text/70">
                 <span className="flex items-center gap-1">
-                  <Heart className={`w-3.5 h-3.5 ${pet.happiness < 40 ? 'text-red-300' : 'text-red-500 animate-pulse'}`} /> 
-                  Felicidade
+                  <Sparkles className="w-3.5 h-3.5 text-yellow-500 animate-pulse" /> Experiência do Pet
                 </span>
-                <span>{pet.happiness}%</span>
+                <span>{pet.xp} / {pet.xpNeeded} XP</span>
               </div>
-              <div className="w-full h-2.5 rounded-full bg-calm-border/50 overflow-hidden">
+              <div className="w-full h-3 rounded-full bg-calm-border/50 overflow-hidden border border-calm-border/40 p-0.5">
                 <div 
-                  className={`h-full rounded-full transition-all duration-500 ease-out ${
-                    pet.happiness < 40 ? 'bg-amber-400' : 'bg-red-400'
-                  }`} 
-                  style={{ width: `${pet.happiness}%` }}
+                  className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all duration-500 ease-out" 
+                  style={{ width: `${(pet.xp / pet.xpNeeded) * 100}%` }}
                 />
               </div>
             </div>
 
+            {/* Stats Metrics (Fome / Felicidade) */}
+            <div className="grid grid-cols-2 gap-4">
+              
+              {/* Hunger status */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between text-xs font-semibold text-calm-text/70">
+                  <span className="flex items-center gap-1 break-words leading-tight">
+                    {pet.hunger < 35 && <AlertTriangle className="w-3.5 h-3.5 text-red-500 animate-bounce flex-shrink-0" />}
+                    Nutrição (Fome)
+                  </span>
+                  <span>{pet.hunger}%</span>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-calm-border/50 overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ease-out ${
+                      pet.hunger < 35 ? 'bg-red-400' : 'bg-calm-primary'
+                    }`}
+                    style={{ width: `${pet.hunger}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Happiness status */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between text-xs font-semibold text-calm-text/70">
+                  <span className="flex items-center gap-1">
+                    <Heart className={`w-3.5 h-3.5 ${pet.happiness < 40 ? 'text-red-300' : 'text-red-500 animate-pulse'}`} /> 
+                    Felicidade
+                  </span>
+                  <span>{pet.happiness}%</span>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-calm-border/50 overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ease-out ${
+                      pet.happiness < 40 ? 'bg-amber-400' : 'bg-red-400'
+                    }`} 
+                    style={{ width: `${pet.happiness}%` }}
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Currency coins display */}
+          <div className="flex items-center gap-1.5 self-end text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-3 py-1 rounded-full border border-amber-200/40">
+            <span className="text-sm">🪙</span>
+            <span>{coins} Moedas</span>
           </div>
         </div>
-
-        {/* Currency coins display */}
-        <div className="flex items-center gap-1.5 self-end text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-3 py-1 rounded-full border border-amber-200/40">
-          <span className="text-sm">🪙</span>
-          <span>{coins} Moedas</span>
-        </div>
       </div>
-      
+
       {/* Dynamic CSS animations inside this component */}
       <style jsx global>{`
         @keyframes bob {
@@ -325,6 +336,80 @@ export const Companion: React.FC = () => {
           animation: wing 1.2s ease-in-out infinite;
         }
       `}</style>
-    </div>
+
+      {/* Change Pet Modal — outside card to avoid backdrop-filter clipping */}
+      {showChangePet && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={() => setShowChangePet(false)}
+        >
+          <div
+            className="relative w-full max-w-sm bg-white border border-calm-border/60 rounded-3xl shadow-2xl p-6 flex flex-col gap-5 animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowChangePet(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-calm-border/50 text-calm-text/40 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col gap-1">
+              <h3 className="text-lg font-bold text-calm-text">Trocar Mascote</h3>
+              <p className="text-sm text-calm-text/60">Todo o progresso, itens e estatísticas serão mantidos.</p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-calm-text/70 uppercase tracking-wider">Tipo</label>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { type: 'gato' as PetType, emoji: '🐱', label: 'Gato' },
+                  { type: 'cachorro' as PetType, emoji: '🐶', label: 'Cachorro' },
+                  { type: 'passaro' as PetType, emoji: '🐦', label: 'Pássaro' },
+                ].map((item) => (
+                  <button
+                    key={item.type}
+                    onClick={() => setNewPetType(item.type)}
+                    className={`py-3 rounded-2xl border-2 flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      newPetType === item.type
+                        ? 'bg-calm-primary/10 border-calm-primary'
+                        : 'bg-transparent border-calm-border hover:border-calm-text/30'
+                    }`}
+                  >
+                    <span className="text-2xl">{item.emoji}</span>
+                    <span className="text-xs font-medium text-calm-text">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-calm-text/70 uppercase tracking-wider" htmlFor="pet-name-change">
+                Nome
+              </label>
+              <input
+                id="pet-name-change"
+                type="text"
+                value={newPetName}
+                onChange={(e) => setNewPetName(e.target.value)}
+                maxLength={15}
+                className="w-full px-4 py-3 rounded-2xl border border-calm-border focus:border-calm-primary focus:ring-1 focus:ring-calm-primary outline-none bg-calm-bg text-calm-text font-medium text-sm transition-all"
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                if (!newPetName.trim()) return
+                setPetDetails(newPetType, newPetName.trim())
+                setShowChangePet(false)
+              }}
+              className="w-full py-3.5 bg-calm-primary hover:bg-calm-primary/95 text-white font-bold text-sm rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <UserCheck className="w-4 h-4" /> Salvar Mascote
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

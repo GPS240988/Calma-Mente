@@ -81,11 +81,11 @@ export const Shop: React.FC = () => {
           return (
             <div
               key={item.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-calm-bg/50 border border-calm-border/80 hover:border-calm-primary/30 transition-all duration-300"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-2xl bg-calm-bg/50 border border-calm-border/80 hover:border-calm-primary/30 transition-all duration-300"
             >
               {/* Item Info Description */}
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-calm-secondary/35 flex items-center justify-center flex-shrink-0 relative border border-calm-border/60">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-calm-secondary/35 flex items-center justify-center flex-shrink-0 relative border border-calm-border/60">
                   {renderItemIcon(item.icon)}
                   
                   {/* Quantity owned badge */}
@@ -96,24 +96,24 @@ export const Shop: React.FC = () => {
                   )}
                 </div>
                 
-                <div className="flex flex-col gap-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-calm-text text-sm truncate">{item.name}</h4>
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <div className="flex flex-wrap items-start sm:items-center gap-1.5 sm:gap-2">
+                    <h4 className="font-semibold text-calm-text text-sm leading-tight break-words">{item.name}</h4>
                     {renderBenefitLabel(item)}
                   </div>
-                  <p className="text-xs text-calm-text/60 leading-normal line-clamp-2">
+                  <p className="text-xs text-calm-text/60 leading-normal line-clamp-2 break-words">
                     {item.description}
                   </p>
                 </div>
               </div>
 
               {/* Purchase/Usage Actions */}
-              <div className="flex items-center gap-2 sm:self-center self-end flex-shrink-0">
+              <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
                 {/* Buy Button */}
                 <button
                   onClick={() => buyItem(item)}
                   disabled={!canAfford}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 active:scale-95 ${
+                  className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1 active:scale-95 whitespace-nowrap ${
                     canAfford
                       ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-sm'
                       : 'bg-transparent border-calm-border/80 text-calm-text/40 cursor-not-allowed'
@@ -128,7 +128,7 @@ export const Shop: React.FC = () => {
                 <button
                   onClick={() => useItem(item.id)}
                   disabled={quantityOwned <= 0}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
+                  className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 whitespace-nowrap ${
                     quantityOwned > 0
                       ? 'bg-calm-primary hover:bg-calm-primary/90 text-white border-calm-primary shadow-sm'
                       : 'bg-transparent border-calm-border/80 text-calm-text/30 cursor-not-allowed'

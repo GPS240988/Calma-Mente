@@ -9,6 +9,7 @@ import { Companion } from '@/features/pomodoro/components/Companion'
 import { Shop } from '@/features/pomodoro/components/Shop'
 import { Stats } from '@/features/pomodoro/components/Stats'
 import { GuidedInterval } from '@/features/pomodoro/components/GuidedInterval'
+import { PageLayout } from '@/components/PageLayout'
 import type { PetType } from '@/features/pomodoro/types'
 
 // Setup inner view that consumes context safely
@@ -24,7 +25,7 @@ const PomodoroMainContent: React.FC = () => {
   if (!isInitialized) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[70vh]">
-        <div className="w-12 h-12 rounded-full border-4 border-calm-primary border-t-transparent animate-spin" />
+        <div className="w-12 h-12 rounded-full border-4 border-[#5E51D9] border-t-transparent animate-spin" />
       </div>
     )
   }
@@ -48,26 +49,26 @@ const PomodoroMainContent: React.FC = () => {
         {/* Back Link */}
         <Link 
           href="/" 
-          className="p-3 -ml-3 rounded-full hover:bg-calm-border/40 text-calm-primary transition-all duration-300"
+          className="p-2.5 rounded-full bg-white/40 backdrop-blur-md hover:bg-white/60 border border-white/60 text-[#5E51D9] transition-all shadow-sm active:scale-95"
           title="Voltar"
         >
-          <ArrowLeft className="w-8 h-8" />
+          <ArrowLeft className="w-6 h-6" />
         </Link>
 
         {/* Dual Mode Basic/RPG toggle */}
-        <div className="flex items-center gap-2 select-none">
-          <span className="text-xs font-semibold text-calm-text/60 uppercase tracking-wider">
+        <div className="flex items-center gap-3 select-none">
+          <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">
             {config.isRpgMode ? 'Modo RPG Ativado' : 'Modo Timer Básico'}
           </span>
           <button
             onClick={() => updateConfig({ isRpgMode: !config.isRpgMode })}
-            className="p-1 rounded-full text-calm-primary hover:text-calm-primary/80 transition-colors"
+            className="p-1 rounded-full text-[#5E51D9] hover:text-[#5E51D9]/80 transition-colors cursor-pointer"
             title="Alternar modo de foco"
           >
             {config.isRpgMode ? (
-              <ToggleRight className="w-10 h-10 text-calm-primary" strokeWidth={1.5} />
+              <ToggleRight className="w-10 h-10 text-[#5E51D9]" strokeWidth={1.5} />
             ) : (
-              <ToggleLeft className="w-10 h-10 text-calm-text/30" strokeWidth={1.5} />
+              <ToggleLeft className="w-10 h-10 text-slate-300" strokeWidth={1.5} />
             )}
           </button>
         </div>
@@ -75,14 +76,14 @@ const PomodoroMainContent: React.FC = () => {
 
       {/* Onboarding: Pet Adoption Flow */}
       {!isPetConfigured && config.isRpgMode ? (
-        <div className="w-full max-w-md mx-auto p-6 sm:p-8 rounded-3xl bg-calm-card border border-calm-border/60 shadow-xl flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-full max-w-md mx-auto p-6 sm:p-8 rounded-3xl bg-white/50 backdrop-blur-xl border border-white/60 shadow-xl flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-500">
           
           <div className="text-center flex flex-col gap-2">
-            <div className="w-14 h-14 rounded-full bg-calm-primary/10 text-calm-primary flex items-center justify-center mx-auto animate-bounce">
+            <div className="w-14 h-14 rounded-full bg-[#5E51D9]/10 text-[#5E51D9] flex items-center justify-center mx-auto animate-bounce">
               <Sparkles className="w-7 h-7" />
             </div>
-            <h2 className="text-2xl font-bold text-calm-text">Adote seu Companheiro!</h2>
-            <p className="text-sm text-calm-text/60">
+            <h2 className="text-2xl font-bold text-[#1E293B]">Adote seu Companheiro!</h2>
+            <p className="text-sm text-[#64748B]">
               Escolha seu pet para caminhar ao seu lado nas jornadas de foco profundo.
             </p>
           </div>
@@ -90,7 +91,7 @@ const PomodoroMainContent: React.FC = () => {
           <form onSubmit={handleAdopt} className="flex flex-col gap-5">
             {/* Pet Type Select Cards */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-calm-text/70 uppercase tracking-wider">Tipo de Mascote</label>
+              <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Tipo de Mascote</label>
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { type: 'gato' as const, emoji: '🐱', label: 'Gato' },
@@ -101,10 +102,10 @@ const PomodoroMainContent: React.FC = () => {
                     key={item.type}
                     type="button"
                     onClick={() => setSelectedType(item.type)}
-                    className={`py-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all ${
+                    className={`py-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       selectedType === item.type
-                        ? 'bg-calm-primary/10 border-calm-primary text-calm-primary font-bold'
-                        : 'bg-transparent border-calm-border hover:border-calm-text/30 text-calm-text/60'
+                        ? 'bg-white border-[#5E51D9] text-[#5E51D9] font-bold shadow-sm'
+                        : 'bg-transparent border-white/60 hover:border-[#5E51D9]/50 text-[#64748B]'
                     }`}
                   >
                     <span className="text-3xl">{item.emoji}</span>
@@ -116,7 +117,7 @@ const PomodoroMainContent: React.FC = () => {
 
             {/* Pet Name input */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-calm-text/70 uppercase tracking-wider" htmlFor="pet-name">
+              <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider" htmlFor="pet-name">
                 Nome do Companheiro
               </label>
               <input
@@ -127,14 +128,14 @@ const PomodoroMainContent: React.FC = () => {
                 onChange={e => setPetName(e.target.value)}
                 maxLength={15}
                 required
-                className="w-full px-4 py-3 rounded-2xl border border-calm-border/80 focus:border-calm-primary focus:ring-1 focus:ring-calm-primary outline-none bg-calm-bg text-calm-text font-medium text-sm transition-all"
+                className="w-full px-4 py-3 rounded-2xl border border-white/60 focus:border-[#5E51D9] focus:ring-1 focus:ring-[#5E51D9] outline-none bg-white/50 text-[#1E293B] font-medium text-sm transition-all"
               />
             </div>
 
             {/* Submit btn */}
             <button
               type="submit"
-              className="w-full py-4 bg-calm-primary hover:bg-calm-primary/95 text-white font-bold text-base rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 mt-2"
+              className="w-full py-4 bg-[#5E51D9] hover:bg-[#5E51D9]/95 text-white font-bold text-base rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 mt-2 cursor-pointer"
             >
               <UserCheck className="w-5 h-5" /> Adotar e Começar Foco
             </button>
@@ -182,8 +183,8 @@ const PomodoroMainContent: React.FC = () => {
 // Export default page
 export default function PomodoroPage() {
   return (
-    <main className="flex min-h-screen flex-col bg-calm-bg p-6 sm:p-12 transition-all duration-700">
+    <PageLayout>
       <PomodoroMainContent />
-    </main>
+    </PageLayout>
   )
 }

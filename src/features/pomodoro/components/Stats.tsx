@@ -82,7 +82,7 @@ export const Stats: React.FC = () => {
           <div className="p-2 rounded-full bg-calm-primary/10 text-calm-primary mb-1.5">
             <Clock className="w-5 h-5" strokeWidth={1.8} />
           </div>
-          <span className="text-sm sm:text-base font-extrabold text-calm-text truncate w-full px-0.5">{formattedTime}</span>
+          <span className="text-sm sm:text-base font-extrabold text-calm-text break-words w-full px-0.5 leading-tight">{formattedTime}</span>
           <span className="text-[10px] text-calm-text/50 font-semibold uppercase tracking-wider mt-0.5">Tempo Foco</span>
         </div>
 

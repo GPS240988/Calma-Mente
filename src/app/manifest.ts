@@ -7,16 +7,16 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Plataforma de regulação emocional rápida e simples.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#F8FAF9',
-    theme_color: '#52796F',
+    background_color: '#F4F2FA',
+    theme_color: '#5E51D9',
     icons: [
       {
-        src: '/icon-192x192.png',
+        src: '/logo.png',
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        src: '/icon-512x512.png',
+        src: '/logo.png',
         sizes: '512x512',
         type: 'image/png',
       },

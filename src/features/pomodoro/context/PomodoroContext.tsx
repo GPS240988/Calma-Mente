@@ -224,9 +224,9 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (typeof window === 'undefined') return
 
     const soundUrls: Record<string, string> = {
-      chuva: 'https://assets.mixkit.co/active_storage/sfx/2448/2448-84.wav', // Heavy rain loop or similar online sound
-      floresta: 'https://assets.mixkit.co/active_storage/sfx/1233/1233-84.wav', // Forest birds
-      lofi: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/ambient-lofi-lounge.mp3' // Lofi placeholder or similar calm loop
+      chuva: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/rain.mp3',
+      floresta: 'https://assets.mixkit.co/active_storage/sfx/1233/1233-84.wav',
+      lofi: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/ambient-lofi-lounge.mp3'
     }
 
     if (ambientAudioRef.current) {
@@ -455,98 +455,24 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.log('[Auth] Estado de autenticação alterado:', event, authUser?.email)
 
       if (authUser) {
-        try {
-          // SEGURANÇA CONTRA VIOLAÇÃO DE FK: Certifica que o usuário existe na tabela public.users
-          try {
-            const { data: userRecord } = await supabase
-              .from('users')
-              .select('id')
-              .eq('id', authUser.id)
-              .maybeSingle()
-
+        // Fire-and-forget: não pode bloquear o cliente Supabase com concorrência
+        supabase
+          .from('users')
+          .select('id')
+          .eq('id', authUser.id)
+          .maybeSingle()
+          .then((res: any) => {
+            const userRecord = res?.data
             if (!userRecord) {
-              console.log('[Auth] Registro em public.users não encontrado. Inicializando registro pós-login...')
-              await supabase.from('users').insert({
+              console.log('[Auth] Criando registro em public.users...')
+              return supabase.from('users').insert({
                 id: authUser.id,
                 email: authUser.email,
                 name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário'
               })
             }
-          } catch (fkErr) {
-            console.error('[Auth] Falha ao verificar/criar registro na tabela public.users:', fkErr)
-          }
-
-          let { data: pomProfile, error: pomError } = await supabase
-            .from('pomodoro_profiles')
-            .select('*')
-            .eq('user_id', authUser.id)
-            .maybeSingle()
-
-          if (pomError) console.error('[Auth] Erro ao buscar pomodoro_profiles:', pomError)
-
-          // Se não existir o perfil no banco após login bem-sucedido, cria um com os valores locais atuais
-          if (!pomProfile && !pomError) {
-            console.log('[Auth] Perfil pomodoro não encontrado para o usuário logado, criando perfil inicial...')
-            const localData = localStorage.getItem('calmamente_pomodoro_data')
-            let currentLocal = { ...DEFAULT_USER_DATA }
-            if (localData) {
-              try {
-                currentLocal = { ...currentLocal, ...JSON.parse(localData) }
-              } catch (_) {}
-            }
-
-            const { data: newProfile, error: createError } = await supabase
-              .from('pomodoro_profiles')
-              .insert({
-                user_id: authUser.id,
-                coins: currentLocal.coins,
-                xp: currentLocal.xp,
-                level: currentLocal.level,
-                pet_name: currentLocal.pet.name,
-                pet_type: currentLocal.pet.type,
-                pet_level: currentLocal.pet.level,
-                pet_xp: currentLocal.pet.xp,
-                pet_xp_needed: currentLocal.pet.xpNeeded,
-                pet_hunger: currentLocal.pet.hunger,
-                pet_happiness: currentLocal.pet.happiness,
-                streak_days: currentLocal.streakDays,
-                last_active_date: currentLocal.lastActiveDate,
-                total_focus_seconds: currentLocal.totalFocusTime,
-                inventory: currentLocal.inventory,
-              })
-              .select()
-              .maybeSingle()
-
-            if (createError) {
-              console.error('[Auth] Erro ao criar perfil pomodoro no banco pós-login:', createError)
-            } else if (newProfile) {
-              console.log('[Auth] Perfil inicial criado com sucesso pós-login!')
-              pomProfile = newProfile
-            }
-          }
-
-          if (pomProfile) {
-            console.log('[Auth] pomodoro_profiles sincronizado do Supabase.')
-            setCoins(pomProfile.coins)
-            setXp(pomProfile.xp)
-            setLevel(pomProfile.level)
-            setStreakDays(pomProfile.streak_days)
-            setLastActiveDate(pomProfile.last_active_date)
-            setTotalFocusTime(pomProfile.total_focus_seconds)
-            setInventory(pomProfile.inventory || { racao_basica: 2 })
-            setPet({
-              name: pomProfile.pet_name,
-              type: pomProfile.pet_type,
-              level: pomProfile.pet_level,
-              xp: pomProfile.pet_xp,
-              xpNeeded: pomProfile.pet_xp_needed,
-              hunger: pomProfile.pet_hunger,
-              happiness: pomProfile.pet_happiness,
-            })
-          }
-        } catch (err) {
-          console.error('[Auth] Falha na sincronização de perfil pós-auth:', err)
-        }
+          })
+          .catch((fkErr: any) => console.error('[Auth] Erro users FK:', fkErr))
       }
     })
 
@@ -583,12 +509,66 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('calmamente_pomodoro_data', JSON.stringify(dataToSave))
 
     // Sync to dedicated pomodoro_profiles table when logged in
-    if (user) {
+    let userId: string | null = user?.id ?? null
+    console.log('[Sync] user do estado:', { userId, userExiste: !!user })
+
+    // Fallback: if user state is null, try to get session directly
+    if (!userId) {
       try {
-        const { error: upsertError } = await supabase
-          .from('pomodoro_profiles')
-          .upsert({
-            user_id: user.id,
+        const { data: { session } } = await supabase.auth.getSession()
+        userId = session?.user?.id ?? null
+        console.log('[Sync] fallback getSession:', { userId, sessionExiste: !!session })
+      } catch (_) {}
+    }
+
+    if (userId) {
+      console.log('[Sync] Fazendo upsert no Supabase para user:', userId)
+
+      // Get session for auth token
+      let accessToken: string | null = null
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        accessToken = session?.access_token ?? null
+        console.log('[Sync] Sessão:', { temSession: !!session, temToken: !!accessToken })
+      } catch (sessionErr) {
+        console.warn('[Sync] Erro ao verificar sessão:', sessionErr)
+      }
+
+      if (!accessToken) {
+        console.warn('[Sync] Sem access token — upsert via SDK como fallback')
+        try {
+          const { error } = await supabase
+            .from('pomodoro_profiles')
+            .upsert({
+              user_id: userId,
+              coins: updatedCoins,
+              xp: updatedXp,
+              level: updatedLevel,
+              pet_name: updatedPet.name,
+              pet_type: updatedPet.type,
+              pet_level: updatedPet.level,
+              pet_xp: updatedPet.xp,
+              pet_xp_needed: updatedPet.xpNeeded,
+              pet_hunger: updatedPet.hunger,
+              pet_happiness: updatedPet.happiness,
+              streak_days: updatedStreak,
+              last_active_date: updatedLastDate,
+              total_focus_seconds: updatedTotalTime,
+              inventory: updatedInventory,
+            }, { onConflict: 'user_id' })
+          if (error) console.error('[Sync] Erro SDK upsert:', error)
+          else console.log('[Sync] SDK upsert OK')
+        } catch (e) {
+          console.error('[Sync] Exceção SDK upsert:', e)
+        }
+      } else {
+        // Direct fetch bypassing SDK session refresh
+        try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 15000)
+
+          const body = {
+            user_id: userId,
             coins: updatedCoins,
             xp: updatedXp,
             level: updatedLevel,
@@ -603,16 +583,36 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             last_active_date: updatedLastDate,
             total_focus_seconds: updatedTotalTime,
             inventory: updatedInventory,
-          }, { onConflict: 'user_id' })
+          }
 
-        if (upsertError) {
-          console.error('[Sync] Erro ao salvar pomodoro_profiles no Supabase:', upsertError)
-        } else {
-          console.log('[Sync] pomodoro_profiles atualizado com sucesso no Supabase.')
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pomodoro_profiles?on_conflict=user_id`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                'Authorization': `Bearer ${accessToken}`,
+                'Prefer': 'resolution=merge-duplicates',
+              },
+              body: JSON.stringify(body),
+              signal: controller.signal,
+            }
+          )
+          clearTimeout(timeoutId)
+
+          if (!res.ok) {
+            const text = await res.text().catch(() => 'sem corpo')
+            console.error('[Sync] Fetch upsert ERRO:', res.status, text)
+          } else {
+            console.log('[Sync] Fetch upsert OK')
+          }
+        } catch (fetchErr) {
+          console.error('[Sync] Fetch upsert exceção:', (fetchErr as Error)?.message || fetchErr)
         }
-      } catch (err) {
-        console.error('Falha de sincronização Supabase (salvo localmente):', err)
       }
+    } else {
+      console.log('[Sync] Nenhum usuário logado, dados salvos apenas no localStorage.')
     }
   }, [user, supabase])
 
@@ -826,17 +826,14 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [isActive, timerMode])
 
   const setPetDetails = useCallback(async (type: PetType, name: string) => {
+    console.log('[Pet] setPetDetails chamado:', { type, name, petAtCall: pet.type, petNameAtCall: pet.name })
     const updatedPet: PetStats = {
       ...pet,
       type,
       name,
-      level: 1,
-      xp: 0,
-      xpNeeded: 100,
-      hunger: 100,
-      happiness: 100
     }
     setPet(updatedPet)
+    console.log('[Pet] updatedPet criado:', updatedPet)
     await saveState(
       coins,
       xp,
@@ -848,6 +845,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       totalFocusTime,
       sessionHistory
     )
+    console.log('[Pet] saveState concluído para:', updatedPet.type)
   }, [pet, coins, xp, level, inventory, streakDays, lastActiveDate, totalFocusTime, sessionHistory, saveState])
 
   const buyItem = useCallback(async (item: ShopItem) => {

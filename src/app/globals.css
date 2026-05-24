@@ -11,33 +11,33 @@
 }
 
 :root {
-  /* Soft, calming light mode palette */
-  --calm-bg: #F8FAF9;
-  --calm-text: #2C3E38;
-  --calm-primary: #52796F;
-  --calm-secondary: #CAD2C5;
-  --calm-accent: #84A98C;
+  /* Soft, calming lavender botanical palette */
+  --calm-bg: #F4F2FA;
+  --calm-text: #2C283E;
+  --calm-primary: #5E51D9;    /* Roxo/lavanda de destaque */
+  --calm-secondary: #E3E1F7;  /* Lavanda claro */
+  --calm-accent: #1E6554;     /* Verde menta escuro */
   --calm-card: #FFFFFF;
-  --calm-border: #E2E8E4;
+  --calm-border: #E8E5F4;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Soft, high-contrast dark mode for less eye strain */
-    --calm-bg: #1A211F;
-    --calm-text: #E5EBE8;
-    --calm-primary: #84A98C;
-    --calm-secondary: #354F52;
-    --calm-accent: #52796F;
-    --calm-card: #222B29;
-    --calm-border: #2C3E38;
+    /* Soft dark mode with lavender accents */
+    --calm-bg: #14121F;
+    --calm-text: #F1EFF9;
+    --calm-primary: #8C80F2;
+    --calm-secondary: #2B2644;
+    --calm-accent: #3CA68F;
+    --calm-card: #1D1B29;
+    --calm-border: #2D2A3F;
   }
 }
 
 body {
   background-color: var(--calm-bg);
   color: var(--calm-text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 

@@ -146,7 +146,7 @@ export const Timer: React.FC = () => {
               <button
                 key={snd.id}
                 onClick={() => updateConfig({ ambientSound: snd.id })}
-                className={`py-2 px-1 rounded-xl text-xs font-medium border text-center transition-all ${
+                className={`py-2 px-1 rounded-xl text-[11px] sm:text-xs font-medium border text-center transition-all leading-tight break-words ${
                   config.ambientSound === snd.id
                     ? 'bg-calm-primary/10 border-calm-primary/40 text-calm-primary font-semibold'
                     : 'bg-transparent border-calm-border/60 text-calm-text/60 hover:border-calm-text/30'
@@ -173,7 +173,7 @@ export const Timer: React.FC = () => {
                 key={index}
                 disabled={isActive}
                 onClick={() => updateConfig({ focusDuration: preset.focus, shortBreakDuration: preset.break })}
-                className={`py-2 px-1.5 rounded-xl text-[10px] sm:text-xs font-medium border text-center transition-all ${
+                className={`py-2 px-1.5 rounded-xl text-[10px] sm:text-xs font-medium border text-center transition-all leading-tight break-words ${
                   config.focusDuration === preset.focus
                     ? 'bg-calm-primary/10 border-calm-primary/40 text-calm-primary font-semibold'
                     : 'bg-transparent border-calm-border/60 text-calm-text/60 hover:border-calm-text/30'
