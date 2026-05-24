@@ -85,7 +85,8 @@ const sugestoes: Record<TipoIntervencao, Record<EstadoPosMeditacao, Sugestao>> =
           titulo: 'Recuperar Corpo',
           acoes: [
             'Repita a intervenção',
-            'Tente uma técnica corporal diferente',
+            'Faça academia',
+            'Vá de bicicleta para lagoa',
           ],
         },
         {

@@ -132,18 +132,18 @@ function SessionPage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-calm-bg p-6 sm:p-12 transition-colors duration-1000">
-      <div className="w-full flex justify-between items-center mb-8">
-        <div className="flex items-center gap-3">
-          <Icon className="w-5 h-5 text-calm-primary" strokeWidth={1.5} />
-          <span className="text-calm-text/50 font-medium">{info.subtitle}</span>
+      <div className="w-full flex justify-between items-center mb-6 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-calm-primary" strokeWidth={1.5} />
+          <span className="text-sm sm:text-base text-calm-text/50 font-medium leading-tight break-words">{info.subtitle}</span>
         </div>
-        <Link href="/select" className="p-3 -mr-3 rounded-full active:bg-calm-border/50 transition-colors">
-          <X className="w-8 h-8 text-calm-text/50" />
+        <Link href="/select" className="p-2 sm:p-3 -mr-3 rounded-full active:bg-calm-border/50 transition-colors">
+          <X className="w-7 h-7 sm:w-8 sm:h-8 text-calm-text/50" />
         </Link>
       </div>
 
-      <div className="flex-1 flex flex-col gap-8">
-        <h1 className="text-2xl sm:text-3xl font-medium text-center text-calm-text leading-snug max-w-sm mx-auto">
+      <div className="flex-1 flex flex-col gap-6 sm:gap-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-medium text-center text-calm-text leading-tight sm:leading-snug max-w-sm mx-auto break-words">
           {info.message}
         </h1>
 
@@ -157,17 +157,17 @@ function SessionPage() {
         {!avaliacaoAberta && (
           <button
             onClick={() => setAvaliacaoAberta(true)}
-            className="w-full py-5 rounded-2xl text-lg font-semibold bg-calm-card/40 backdrop-blur-md border border-calm-primary/30 text-calm-primary hover:bg-calm-primary/10 active:scale-[0.98] transition-all shadow-md duration-300 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-4 sm:py-5 rounded-2xl text-base sm:text-lg font-semibold bg-calm-card/40 backdrop-blur-md border border-calm-primary/30 text-calm-primary hover:bg-calm-primary/10 active:scale-[0.98] transition-all shadow-md duration-300 flex items-center justify-center gap-2 cursor-pointer leading-tight"
           >
             📋 Responder Avaliação Pós-Crise
           </button>
         )}
 
         {avaliacaoAberta && !sugestao && (
-          <div className="w-full max-w-md mx-auto p-6 rounded-3xl bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col gap-4">
-            <div className="text-center mb-2">
-              <h3 className="text-lg font-bold text-calm-text">Avaliação Pós-Crise</h3>
-              <p className="text-sm text-calm-text/70 mt-1">Como você se sente após este exercício?</p>
+          <div className="w-full max-w-md mx-auto p-4 sm:p-6 rounded-3xl bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col gap-4">
+            <div className="text-center mb-1 sm:mb-2">
+              <h3 className="text-base sm:text-lg font-bold text-calm-text leading-tight">Avaliação Pós-Crise</h3>
+              <p className="text-sm text-calm-text/70 mt-1 leading-snug">Como você se sente após este exercício?</p>
             </div>
             
             <div className="flex flex-col gap-3">
@@ -189,10 +189,10 @@ function SessionPage() {
                   <button
                     key={e.key}
                     onClick={() => handleAvaliar(e.key)}
-                    className={`w-full p-4 rounded-2xl bg-calm-card/60 border border-calm-border/80 text-left transition-all duration-300 active:scale-[0.98] shadow-sm cursor-pointer ${borderCor}`}
+                    className={`w-full p-3 sm:p-4 rounded-2xl bg-calm-card/60 border border-calm-border/80 text-left transition-all duration-300 active:scale-[0.98] shadow-sm cursor-pointer ${borderCor}`}
                   >
-                    <span className={`text-base ${textCor}`}>{e.label}</span>
-                    <p className="text-xs text-calm-text/60 mt-0.5">{e.desc}</p>
+                    <span className={`text-sm sm:text-base ${textCor} leading-tight`}>{e.label}</span>
+                    <p className="text-xs text-calm-text/60 mt-0.5 leading-snug">{e.desc}</p>
                   </button>
                 )
               })}
@@ -201,10 +201,10 @@ function SessionPage() {
         )}
 
         {sugestao && (
-          <div className="w-full max-w-md mx-auto flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-6 duration-700">
-            <div className="p-6 rounded-3xl bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl text-center">
-              <p className="text-xs font-semibold text-calm-primary/80 uppercase tracking-widest mb-1">Avaliação Concluída</p>
-              <h2 className="text-xl font-bold text-calm-text">{sugestao.titulo}</h2>
+          <div className="w-full max-w-md mx-auto flex flex-col gap-4 sm:gap-5 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="p-4 sm:p-6 rounded-3xl bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl text-center">
+              <p className="text-[10px] sm:text-xs font-semibold text-calm-primary/80 uppercase tracking-widest mb-1">Avaliação Concluída</p>
+              <h2 className="text-lg sm:text-xl font-bold text-calm-text leading-tight break-words">{sugestao.titulo}</h2>
               <p className="text-sm text-calm-text/70 mt-1.5 leading-relaxed">{sugestao.descricao}</p>
 
               <div className="flex flex-wrap justify-center gap-1.5 mt-4">
@@ -212,7 +212,7 @@ function SessionPage() {
                   <button
                     key={e.key}
                     onClick={() => handleAvaliar(e.key)}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all duration-300 cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-medium border transition-all duration-300 cursor-pointer ${
                       e.key === estadoSelecionado
                         ? 'bg-calm-primary/15 border-calm-primary text-calm-primary shadow-sm font-semibold'
                         : 'bg-transparent border-calm-border text-calm-text/50 hover:border-calm-text/30'
@@ -227,16 +227,16 @@ function SessionPage() {
             {sugestao.categorias.map((cat) => (
               <div
                 key={cat.titulo}
-                className="w-full bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl p-5 rounded-3xl text-left flex flex-col gap-3.5 transition-all duration-500"
+                className="w-full bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl p-4 sm:p-5 rounded-3xl text-left flex flex-col gap-3.5 transition-all duration-500"
               >
-                <h3 className="text-xs font-bold text-calm-primary/80 uppercase tracking-wider border-b border-calm-border/50 pb-2">
+                <h3 className="text-[10px] sm:text-xs font-bold text-calm-primary/80 uppercase tracking-wider border-b border-calm-border/50 pb-2">
                   {cat.titulo}
                 </h3>
                 <div className="flex flex-col gap-2.5">
                   {cat.acoes.map((acao) => (
                     <div key={acao} className="flex items-start gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-calm-primary mt-2 flex-shrink-0" />
-                      <p className="text-sm text-calm-text/90 font-medium leading-relaxed">{acao}</p>
+                      <p className="text-sm text-calm-text/90 font-medium leading-relaxed break-words">{acao}</p>
                     </div>
                   ))}
                 </div>
@@ -244,10 +244,10 @@ function SessionPage() {
             ))}
 
             {(estadoSelecionado === 'muito_melhor' || estadoSelecionado === 'um_pouco_melhor') && (
-              <div className="w-full bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl p-6 rounded-3xl text-center flex flex-col items-center gap-3 animate-in fade-in zoom-in-95 duration-300">
-                <span className="text-3xl animate-bounce">🌱</span>
+              <div className="w-full bg-calm-card/45 backdrop-blur-xl border border-calm-border/60 shadow-xl p-4 sm:p-6 rounded-3xl text-center flex flex-col items-center gap-3 animate-in fade-in zoom-in-95 duration-300">
+                <span className="text-2xl sm:text-3xl animate-bounce">🌱</span>
                 <div>
-                  <h4 className="text-sm font-bold text-calm-text">Sua mente está mais tranquila</h4>
+                  <h4 className="text-sm font-bold text-calm-text leading-tight">Sua mente está mais tranquila</h4>
                   <p className="text-xs text-calm-text/70 mt-1 leading-relaxed">
                     Que tal canalizar essa clareza para a produtividade de forma suave? Comece um Pomodoro gamificado!
                   </p>
@@ -263,10 +263,10 @@ function SessionPage() {
 
             <button
               onClick={() => router.push('/')}
-              className="w-full py-4 text-base font-semibold bg-calm-bg hover:bg-calm-border/10 border border-calm-border rounded-2xl active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer text-calm-text/80"
+              className="w-full py-3.5 sm:py-4 text-sm sm:text-base font-semibold bg-calm-bg hover:bg-calm-border/10 border border-calm-border rounded-2xl active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer text-calm-text/80 leading-tight"
             >
               Voltar ao início
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         )}

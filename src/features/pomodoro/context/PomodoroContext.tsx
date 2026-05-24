@@ -261,169 +261,190 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // 1. Initial State Loading & Auth Setup
   useEffect(() => {
+    let mounted = true
+
     async function loadData() {
-      // 1.1 Load Config & Local Game Data from localStorage
-      const localConfig = localStorage.getItem('calmamente_pomodoro_config')
-      if (localConfig) {
-        try {
-          const parsed = JSON.parse(localConfig)
-          setConfig(parsed)
-          setSecondsLeft(parsed.focusDuration)
-        } catch (_) {}
-      }
-
-      const localData = localStorage.getItem('calmamente_pomodoro_data')
-      let mergedData = { ...DEFAULT_USER_DATA }
-      if (localData) {
-        try {
-          const parsed = JSON.parse(localData)
-          mergedData = { ...mergedData, ...parsed }
-        } catch (_) {}
-      }
-
-      // 1.2 Fetch Auth User from Supabase
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        if (authUser) {
-          setUser(authUser)
-          console.log('[Init] Usuário logado detectado no mount:', authUser.email)
+        // 1.1 Load Config & Local Game Data from localStorage
+        let localConfig: string | null = null
+        try {
+          localConfig = localStorage.getItem('calmamente_pomodoro_config')
+        } catch (_) {}
 
-          // SEGURANÇA CONTRA VIOLAÇÃO DE FK: Certifica que o usuário existe na tabela public.users
+        if (localConfig) {
           try {
-            const { data: userRecord } = await supabase
-              .from('users')
-              .select('id')
-              .eq('id', authUser.id)
-              .maybeSingle()
+            const parsed = JSON.parse(localConfig)
+            setConfig(parsed)
+            setSecondsLeft(parsed.focusDuration)
+          } catch (_) {}
+        }
 
-            if (!userRecord) {
-              console.log('[Init] Registro em public.users não encontrado. Inicializando registro...')
-              await supabase.from('users').insert({
-                id: authUser.id,
-                email: authUser.email,
-                name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário'
-              })
+        let localData: string | null = null
+        try {
+          localData = localStorage.getItem('calmamente_pomodoro_data')
+        } catch (_) {}
+
+        let mergedData = { ...DEFAULT_USER_DATA }
+        if (localData) {
+          try {
+            const parsed = JSON.parse(localData)
+            mergedData = { ...mergedData, ...parsed }
+          } catch (_) {}
+        }
+
+        // 1.2 Fetch Auth User from Supabase
+        try {
+          const { data: { user: authUser } } = await supabase.auth.getUser()
+          if (authUser) {
+            setUser(authUser)
+            console.log('[Init] Usuário logado detectado no mount:', authUser.email)
+
+            // SEGURANÇA CONTRA VIOLAÇÃO DE FK: Certifica que o usuário existe na tabela public.users
+            try {
+              const { data: userRecord } = await supabase
+                .from('users')
+                .select('id')
+                .eq('id', authUser.id)
+                .maybeSingle()
+
+              if (!userRecord) {
+                console.log('[Init] Registro em public.users não encontrado. Inicializando registro...')
+                await supabase.from('users').insert({
+                  id: authUser.id,
+                  email: authUser.email,
+                  name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário'
+                })
+              }
+            } catch (fkErr) {
+              console.error('[Init] Falha ao verificar/criar registro na tabela public.users:', fkErr)
             }
-          } catch (fkErr) {
-            console.error('[Init] Falha ao verificar/criar registro na tabela public.users:', fkErr)
-          }
-          
-          // Fetch from dedicated pomodoro_profiles table
-          let { data: pomProfile, error: pomError } = await supabase
-            .from('pomodoro_profiles')
-            .select('*')
-            .eq('user_id', authUser.id)
-            .maybeSingle()
-
-          if (pomError) {
-            console.error('[Init] Erro ao buscar perfil pomodoro:', pomError)
-          }
-
-          // Se não existir o perfil no banco para o usuário logado, cria um inicial imediatamente
-          if (!pomProfile && !pomError) {
-            console.log('[Init] Perfil pomodoro não encontrado no Supabase. Criando perfil inicial...')
-            const { data: newProfile, error: createError } = await supabase
+            
+            // Fetch from dedicated pomodoro_profiles table
+            let { data: pomProfile, error: pomError } = await supabase
               .from('pomodoro_profiles')
-              .insert({
-                user_id: authUser.id,
-                coins: mergedData.coins,
-                xp: mergedData.xp,
-                level: mergedData.level,
-                pet_name: mergedData.pet.name,
-                pet_type: mergedData.pet.type,
-                pet_level: mergedData.pet.level,
-                pet_xp: mergedData.pet.xp,
-                pet_xp_needed: mergedData.pet.xpNeeded,
-                pet_hunger: mergedData.pet.hunger,
-                pet_happiness: mergedData.pet.happiness,
-                streak_days: mergedData.streakDays,
-                last_active_date: mergedData.lastActiveDate,
-                total_focus_seconds: mergedData.totalFocusTime,
-                inventory: mergedData.inventory,
-              })
-              .select()
+              .select('*')
+              .eq('user_id', authUser.id)
               .maybeSingle()
 
-            if (createError) {
-              console.error('[Init] Erro ao criar perfil inicial no banco:', createError)
-            } else if (newProfile) {
-              console.log('[Init] Perfil inicial criado com sucesso no banco!')
-              pomProfile = newProfile
+            if (pomError) {
+              console.error('[Init] Erro ao buscar perfil pomodoro:', pomError)
             }
-          }
 
-          if (pomProfile) {
-            console.log('[Init] Dados do Pomodoro carregados da tabela pomodoro_profiles.')
-            mergedData = {
-              ...mergedData,
-              coins: pomProfile.coins,
-              xp: pomProfile.xp,
-              level: pomProfile.level,
-              streakDays: pomProfile.streak_days,
-              lastActiveDate: pomProfile.last_active_date,
-              totalFocusTime: pomProfile.total_focus_seconds,
-              inventory: pomProfile.inventory || { racao_basica: 2 },
-              pet: {
-                name: pomProfile.pet_name,
-                type: pomProfile.pet_type,
-                level: pomProfile.pet_level,
-                xp: pomProfile.pet_xp,
-                xpNeeded: pomProfile.pet_xp_needed,
-                hunger: pomProfile.pet_hunger,
-                happiness: pomProfile.pet_happiness,
+            // Se não existir o perfil no banco para o usuário logado, cria um inicial imediatamente
+            if (!pomProfile && !pomError) {
+              console.log('[Init] Perfil pomodoro não encontrado no Supabase. Criando perfil inicial...')
+              const { data: newProfile, error: createError } = await supabase
+                .from('pomodoro_profiles')
+                .insert({
+                  user_id: authUser.id,
+                  coins: mergedData.coins,
+                  xp: mergedData.xp,
+                  level: mergedData.level,
+                  pet_name: mergedData.pet.name,
+                  pet_type: mergedData.pet.type,
+                  pet_level: mergedData.pet.level,
+                  pet_xp: mergedData.pet.xp,
+                  pet_xp_needed: mergedData.pet.xpNeeded,
+                  pet_hunger: mergedData.pet.hunger,
+                  pet_happiness: mergedData.pet.happiness,
+                  streak_days: mergedData.streakDays,
+                  last_active_date: mergedData.lastActiveDate,
+                  total_focus_seconds: mergedData.totalFocusTime,
+                  inventory: mergedData.inventory,
+                })
+                .select()
+                .maybeSingle()
+
+              if (createError) {
+                console.error('[Init] Erro ao criar perfil inicial no banco:', createError)
+              } else if (newProfile) {
+                console.log('[Init] Perfil inicial criado com sucesso no banco!')
+                pomProfile = newProfile
               }
             }
-          }
-        } else {
-          console.log('[Init] Nenhum usuário logado detectado no mount, operando offline.')
-        }
-      } catch (err) {
-        console.error('[Init] Erro de carregamento do Supabase, operando no modo local offline:', err)
-      }
 
-      // Apply initial values
-      setCoins(mergedData.coins)
-      setXp(mergedData.xp)
-      setLevel(mergedData.level)
-      setInventory(mergedData.inventory)
-      setPet(mergedData.pet)
-      setStreakDays(mergedData.streakDays)
-      setLastActiveDate(mergedData.lastActiveDate)
-      setTotalFocusTime(mergedData.totalFocusTime)
-      setSessionHistory(mergedData.sessionHistory)
-      
-      // 1.3 Resume active timer if it was running when unmounted/reloaded
-      const savedActiveTimer = localStorage.getItem('calmamente_active_timer_end')
-      if (savedActiveTimer) {
-        try {
-          const { expectedEndTime, mode, focusDuration: savedFocus, breakDuration: savedBreak } = JSON.parse(savedActiveTimer)
-          const now = Date.now()
-          const remaining = Math.round((expectedEndTime - now) / 1000)
-          
-          if (remaining > 0) {
-            setTimerMode(mode)
-            setSecondsLeft(remaining)
-            setIsActive(true)
-            console.log(`[Timer] Cronômetro Pomodoro recuperado em progresso: ${remaining}s restantes no modo ${mode}`)
+            if (pomProfile) {
+              console.log('[Init] Dados do Pomodoro carregados da tabela pomodoro_profiles.')
+              mergedData = {
+                ...mergedData,
+                coins: pomProfile.coins,
+                xp: pomProfile.xp,
+                level: pomProfile.level,
+                streakDays: pomProfile.streak_days,
+                lastActiveDate: pomProfile.last_active_date,
+                totalFocusTime: pomProfile.total_focus_seconds,
+                inventory: pomProfile.inventory || { racao_basica: 2 },
+                pet: {
+                  name: pomProfile.pet_name,
+                  type: pomProfile.pet_type,
+                  level: pomProfile.pet_level,
+                  xp: pomProfile.pet_xp,
+                  xpNeeded: pomProfile.pet_xp_needed,
+                  hunger: pomProfile.pet_hunger,
+                  happiness: pomProfile.pet_happiness,
+                }
+              }
+            }
           } else {
-            localStorage.removeItem('calmamente_active_timer_end')
-            if (mode === 'foco') {
-              // Wait a bit to ensure states are applied before trigger
-              setTimeout(() => {
-                completeFocusSession()
-                alert('Excelente! Você completou um ciclo de foco enquanto estava fora e seu mascote cresceu!')
-              }, 500)
+            console.log('[Init] Nenhum usuário logado detectado no mount, operando offline.')
+          }
+        } catch (err) {
+          console.error('[Init] Erro de carregamento do Supabase, operando no modo local offline:', err)
+        }
+
+        if (!mounted) return
+
+        // Apply initial values
+        setCoins(mergedData.coins)
+        setXp(mergedData.xp)
+        setLevel(mergedData.level)
+        setInventory(mergedData.inventory)
+        setPet(mergedData.pet)
+        setStreakDays(mergedData.streakDays)
+        setLastActiveDate(mergedData.lastActiveDate)
+        setTotalFocusTime(mergedData.totalFocusTime)
+        setSessionHistory(mergedData.sessionHistory)
+        
+        // 1.3 Resume active timer if it was running when unmounted/reloaded
+        try {
+          const savedActiveTimer = localStorage.getItem('calmamente_active_timer_end')
+          if (savedActiveTimer) {
+            try {
+              const { expectedEndTime, mode, focusDuration: savedFocus, breakDuration: savedBreak } = JSON.parse(savedActiveTimer)
+              const now = Date.now()
+              const remaining = Math.round((expectedEndTime - now) / 1000)
+              
+              if (remaining > 0) {
+                setTimerMode(mode)
+                setSecondsLeft(remaining)
+                setIsActive(true)
+                console.log(`[Timer] Cronômetro Pomodoro recuperado em progresso: ${remaining}s restantes no modo ${mode}`)
+              } else {
+                localStorage.removeItem('calmamente_active_timer_end')
+                if (mode === 'foco') {
+                  setTimeout(() => {
+                    completeFocusSession()
+                    alert('Excelente! Você completou um ciclo de foco enquanto estava fora e seu mascote cresceu!')
+                  }, 500)
+                }
+              }
+            } catch (e) {
+              console.error('[Timer] Falha ao recuperar cronômetro salvo:', e)
             }
           }
-        } catch (e) {
-          console.error('[Timer] Falha ao recuperar cronômetro salvo:', e)
+        } catch (_) {}
+      } catch (err) {
+        console.error('[Init] Erro crítico durante inicialização:', err)
+      } finally {
+        if (mounted) {
+          setIsInitialized(true)
         }
       }
-
-      setIsInitialized(true)
     }
 
     loadData()
+
+    return () => { mounted = false }
   }, [])
 
   // 1.4 Dynamic Auth State Change Listener

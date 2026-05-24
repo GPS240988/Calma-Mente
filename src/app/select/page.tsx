@@ -115,8 +115,8 @@ export default function SelectPage() {
       </div>
 
       <div className="w-full max-w-lg mx-auto flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold text-center mb-1 text-calm-text">Como você está se sentindo?</h1>
-        <p className="text-calm-text/70 text-lg text-center mb-8">Escolha a técnica que mais se adequa ao seu momento.</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-center mb-1 text-calm-text leading-tight break-words">Como você está se sentindo?</h1>
+        <p className="text-calm-text/70 text-base sm:text-lg text-center mb-6 sm:mb-8 leading-snug">Escolha a técnica que mais se adequa ao seu momento.</p>
 
         <div className="flex flex-col gap-4">
           {sessions.map((s) => {
@@ -128,26 +128,26 @@ export default function SelectPage() {
               >
                 <button
                   onClick={() => router.push(`/session?tipo=${s.id}`)}
-                  className="w-full flex items-start gap-5 p-5 text-left active:scale-[0.98] transition-all"
+                  className="w-full flex items-start gap-4 sm:gap-5 p-4 sm:p-5 text-left active:scale-[0.98] transition-all"
                 >
-                  <div className="w-14 h-14 rounded-full bg-calm-secondary/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Icon className="w-7 h-7 text-calm-primary" strokeWidth={1.5} />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-calm-secondary/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-calm-primary" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h2 className="text-lg font-semibold text-calm-text truncate">{s.title}</h2>
-                      <span className="text-xs text-calm-text/40 flex-shrink-0 flex items-center gap-1">
+                    <div className="flex items-start sm:items-center justify-between gap-2">
+                      <h2 className="text-base sm:text-lg font-semibold text-calm-text leading-tight break-words">{s.title}</h2>
+                      <span className="text-xs text-calm-text/40 flex-shrink-0 flex items-center gap-1 mt-0.5 sm:mt-0">
                         <Clock className="w-3.5 h-3.5" strokeWidth={1.5} />
                         {s.duration}
                       </span>
                     </div>
-                    <p className="text-sm text-calm-text/70 mt-1 leading-relaxed">{s.description}</p>
-                    <p className="text-xs text-calm-primary/70 mt-2 font-medium">{s.mood}</p>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    <p className="text-sm text-calm-text/70 mt-1.5 leading-relaxed">{s.description}</p>
+                    <p className="text-xs text-calm-primary/70 mt-2 font-medium leading-snug">{s.mood}</p>
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
                       {s.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-calm-primary/10 text-calm-primary/80 border border-calm-primary/20"
+                          className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-calm-primary/10 text-calm-primary/80 border border-calm-primary/20"
                         >
                           {tag}
                         </span>
@@ -159,10 +159,10 @@ export default function SelectPage() {
                       e.stopPropagation()
                       setModal({ type: 'info', sessionId: s.id })
                     }}
-                    className="p-2 rounded-full hover:bg-calm-border/50 transition-colors flex-shrink-0"
+                    className="p-1.5 sm:p-2 rounded-full hover:bg-calm-border/50 transition-colors flex-shrink-0 self-start mt-1"
                     aria-label="Ver justificativa científica"
                   >
-                    <Info className="w-5 h-5 text-calm-text/40" strokeWidth={1.5} />
+                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-calm-text/40" strokeWidth={1.5} />
                   </span>
                 </button>
               </div>
