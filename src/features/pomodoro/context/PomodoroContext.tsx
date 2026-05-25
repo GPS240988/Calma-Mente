@@ -225,8 +225,8 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const soundUrls: Record<string, string> = {
       chuva: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/rain.mp3',
-      floresta: 'https://assets.mixkit.co/active_storage/sfx/1233/1233-84.wav',
-      lofi: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/ambient-lofi-lounge.mp3'
+      floresta: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/forest.mp3',
+      lofi: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/lofi.mp3'
     }
 
     if (ambientAudioRef.current) {

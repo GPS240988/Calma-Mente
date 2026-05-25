@@ -33,7 +33,7 @@ export default async function Home() {
 
           {/* Lotus Meditation Icon */}
           <div className="flex flex-col items-center gap-2 animate-pulse duration-[5000ms]">
-            <img src="/logo.png" alt="Logo" className="w-32 h-32 object-contain drop-shadow-sm" />
+            <img src="/logo.png" alt="Logo" className="w-48 h-48 sm:w-56 sm:h-56 object-contain drop-shadow-sm" />
           </div>
 
           {/* Heading Greetings */}
