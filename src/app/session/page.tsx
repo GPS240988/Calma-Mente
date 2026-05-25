@@ -84,7 +84,7 @@ function SessionPage() {
 
   const audioFiles: Record<string, string> = {
     respiracao: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/RespiracaoCalmante.mp3',
-    desaceleracao: '/audio/desaceleracao-mental.mp3',
+    desaceleracao: 'https://vaxfjwdcndvchoukvmps.supabase.co/storage/v1/object/public/audios/DesaceleracaoMental.mp3',
     grounding: '/audio/grounding-5-4-3-2-1.mp3',
     relaxamento: '/audio/relaxamento-progressivo.mp3',
   }
